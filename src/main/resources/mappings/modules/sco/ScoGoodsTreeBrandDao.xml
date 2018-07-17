@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.sco.dao.ScoGoodsTreeBrandDao">
+    
+	<sql id="scoGoodsTreeBrandColumns">
+		a.id AS "id",
+		a.tree_id AS "treeId",
+		a.name AS "name",
+		a.sort AS "sort",
+		a.user_id AS "user.id",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="scoGoodsTreeBrandJoins">
+	</sql>
+    
+	<select id="get" resultType="ScoGoodsTreeBrand">
+		SELECT 
+			<include refid="scoGoodsTreeBrandColumns"/>
+		FROM sco_goods_tree_brand a
+		<include refid="scoGoodsTreeBrandJoins"/>
+		WHERE a.id = #{id}
+	</select>
+
+	<select id="getByName" resultType="ScoGoodsTreeBrand">
+		SELECT
+		<include refid="scoGoodsTreeBrandColumns"/>
+		FROM sco_goods_tree_brand a
+		WHERE a.name = #{name} and a.tree_id = #{treeId} and a.user_id = #{userId}
+	</select>
+	
+	<select id="findList" resultType="ScoGoodsTreeBrand">
+		SELECT 
+			<include refid="scoGoodsTreeBrandColumns"/>
+		FROM sco_goods_tree_brand a
+		<include refid="scoGoodsTreeBrandJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="ScoGoodsTreeBrand">
+		SELECT 
+			<include refid="scoGoodsTreeBrandColumns"/>
+		FROM sco_goods_tree_brand a
+		<include refid="scoGoodsTreeBrandJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO sco_goods_tree_brand(
+			id,
+			tree_id,
+			name,
+			sort,
+			user_id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{id},
+			#{treeId},
+			#{name},
+			#{sort},
+			#{user.id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE sco_goods_tree_brand SET 	
+			name = #{name},
+			user_id = #{user.id}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE sco_goods_tree_brand SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

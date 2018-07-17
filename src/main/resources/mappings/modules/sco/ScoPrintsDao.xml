@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.sco.dao.ScoPrintsDao">
+    
+	<sql id="scoPrintsColumns">
+		a.id AS "id",
+		a.print_tree_id AS "printTreeId",
+		a.sub_name AS "subName",
+		a.sub_id AS "subId",
+		a.print_no AS "printNo",
+		a.print_name AS "printName",
+		a.specification AS "specification",
+		a.print_page_size AS "printPageSize",
+		a.paper_type_id AS "paperTypeId",
+		a.paper_type_name AS "paperTypeName",
+		a.description AS "description",
+		a.price AS "price",
+		a.price AS "normalPrice",
+		a.price AS "agrtPrice",
+		a.units AS "units",
+		a.pic_url AS "picUrl",
+		a.state AS "state",
+		a.type AS "type",
+		a.create_by AS "createBy.id",
+		u. name AS "createBy.name",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="scoPrintsJoins">
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="ScoPrints">
+		SELECT 
+			<include refid="scoPrintsColumns"/>
+		FROM sco_prints a
+		<include refid="scoPrintsJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="ScoPrints">
+		SELECT 
+			<include refid="scoPrintsColumns"/>
+		FROM sco_prints a
+		<include refid="scoPrintsJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="id != null and id != ''">
+				AND a.id = #{id}
+			</if>
+			
+			<if test="serTreeId != null and serTreeId != '' 
+			    and serTreeId.id != null and serTreeId.id != ''">
+				AND a.print_tree_id = #{serTreeId.id}
+			</if>
+			<if test="subName != null and subName != ''">
+				AND a.sub_name = #{subName}
+			</if>
+			<if test="subId != null and subId != ''
+			and subId.id != null and subId.id != ''">
+				AND a.sub_id = #{subId.id}
+			</if>
+			<if test="printNo != null and printNo != ''">
+				AND a.print_no = #{printNo}
+			</if>
+			<if test="printName != null and printName != ''">
+				AND a.print_name = #{printName}
+			</if>
+			<if test="specification != null and specification != ''">
+				AND a.specification = #{specification}
+			</if>
+			<if test="printPageSize != null and printPageSize != ''">
+				AND a.print_page_size = #{printPageSize}
+			</if>
+			<if test="paperTreeId != null and paperTreeId != ''
+				and paperTreeId.id != null and paperTreeId.id != ''">
+				AND a.paper_type_id = #{paperTreeId.id}
+			</if>
+			<if test="description != null and description != ''">
+				AND a.description = #{description}
+			</if>
+			<if test="price != null and price != ''">
+				AND a.price = #{price}
+			</if>
+			<if test="units != null and units != ''">
+				AND a.units = #{units}
+			</if>
+			<if test="picUrl != null and picUrl != ''">
+				AND a.pic_url = #{picUrl}
+			</if>
+			<if test="state != null and state != ''">
+				AND a.state = #{state}
+			</if>
+			<if test="type != null and type != ''">
+				AND a.type = #{type}
+			</if>
+			<if test="createBy != null and createBy.id != null and createBy.id != ''">
+				AND a.create_by = #{createBy.id}
+			</if>
+			<if test="createDate != null and createDate != ''">
+				AND a.create_date = #{createDate}
+			</if>
+			<if test="updateBy != null and updateBy.id != null and updateBy.id != ''">
+				AND a.update_by = #{updateBy.id}
+			</if>
+			<if test="updateDate != null and updateDate != ''">
+				AND a.update_date = #{updateDate}
+			</if>
+			<if test="remarks != null and remarks != ''">
+				AND a.remarks = #{remarks}
+			</if>
+			
+			<if test="minPrice != null and minPrice != ''">
+				AND a.price >=#{minPrice}
+			</if>
+			<if test="maxPrice != null and maxPrice != ''">
+				AND a.price <![CDATA[  <=  ]]>  #{maxPrice}
+			</if>
+			
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="ScoPrints">
+		SELECT 
+			<include refid="scoPrintsColumns"/>
+		FROM sco_prints a
+		<include refid="scoPrintsJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO sco_prints(
+			id,
+			print_tree_id,
+			sub_name,
+			sub_id,
+			print_no,
+			print_name,
+			specification,
+			print_page_size,
+			paper_type_id,
+			paper_type_name,
+			description,
+			price,
+			units,
+			pic_url,
+			state,
+			type,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{id},
+			#{serTreeId.id},
+			#{subName},
+			#{subId.id},
+			#{printNo},
+			#{printName},
+			#{specification},
+			#{printPageSize},
+			#{paperTreeId.id},
+			#{paperTypeName},
+			#{description},
+			#{price},
+			#{units},
+			#{picUrl},
+			#{state},
+			#{type},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE sco_prints SET 	
+			print_tree_id = #{printTreeId},
+			sub_name = #{subName},
+			sub_id = #{subId},
+			print_no = #{printNo},
+			print_name = #{printName},
+			specification = #{specification},
+			print_page_size = #{printPageSize},
+			paper_type_id = #{paperTypeId},
+			paper_type_sub_name = #{paperTypeName},
+			description = #{description},
+			price = #{price},
+			units = #{units},
+			pic_url = #{picUrl},
+			state = #{state},
+			type = #{type},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE sco_prints SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<update id="updateState">
+		UPDATE sco_prints SET
+		state = #{state}
+		WHERE id = #{id}
+	</update>
+	
+	
+</mapper>

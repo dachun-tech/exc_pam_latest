@@ -1,0 +1,602 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.sco.dao.ScoFinalReportDao">
+    
+	<sql id="scoFinalReportColumns">
+		a.id AS "id",
+		a.item_name AS "itemName",
+		a.serial_number AS "serialNumber",
+		a.office_id AS "office.id",
+		a.office_name AS "officeName",
+		a.department AS "department",
+		a.invoicenum AS "invoicenum",
+		a.identifier AS "identifier",
+		a.identifier_type AS "identifierType",
+		a.buy_date AS "buyDate",
+		a.linkman AS "linkman",
+		a.mobile AS "mobile",
+		a.ser_tree_id AS "serTreeId.id",
+		a.sub_id AS "subId.id",
+		a.third_id AS "thirdId.id",
+		a.type AS "type",
+		a.specs AS "specs",
+		a.pages AS "pages",
+		a.quantity AS "quantity",
+		a.other_price AS "otherPrice",
+		a.state AS "state",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		a.paper_type_id AS "paperTypeId.id",
+		a.description AS "description",
+		a.price AS "price",
+		a.units AS "units",
+		a.pic_url AS "picUrl",
+		o3.name AS "office.name",
+		t1.name AS "serTreeId.name",
+		t2.name AS "subId.name",
+		t3.name AS "thirdId.name",
+		r1.name AS "paperTypeId.name"
+	</sql>
+	
+	<sql id="scoFinalReportJoins">
+		LEFT JOIN sys_office o3 ON o3.id = a.office_id
+		LEFT JOIN sco_ser_tree t1 ON t1.id = a.ser_tree_id
+		LEFT JOIN sco_ser_tree t2 ON t2.id = a.sub_id
+		LEFT JOIN sco_ser_tree t3 ON t3.id = a.third_id
+		LEFT JOIN sco_ser_tree r1 ON r1.id = a.paper_type_id and (r1.sub_type='paper' or r1.sub_type='twmaterial')
+	</sql>
+    
+	<select id="get" resultType="ScoFinalReport">
+		SELECT 
+			<include refid="scoFinalReportColumns"/>
+		FROM sco_final_report a
+		<include refid="scoFinalReportJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="ScoFinalReport">
+		SELECT 
+			<include refid="scoFinalReportColumns"/>
+		FROM sco_final_report a
+		<include refid="scoFinalReportJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="office != null and office.id != null and office.id != ''">
+				AND a.office_id = #{office.id}
+			</if>
+			<if test="department != null and department != ''">
+				AND a.department = #{department}
+			</if>
+			<if test="identifier != null and identifier != ''">
+				AND a.identifier = #{identifier}
+			</if>
+			<if test="linkman != null and linkman != ''">
+				AND a.linkman = #{linkman}
+			</if>
+			<if test="serTreeId != null and serTreeId.id != null and serTreeId.id != ''">
+				AND a.ser_tree_id = #{serTreeId.id}
+			</if>
+			<if test="subId != null and subId.id != null and subId.id != ''">
+				AND a.sub_id = #{subId.id}
+			</if>
+			<if test="thirdId != null and thirdId.id != null and thirdId.id != ''">
+				AND a.third_id = #{thirdId.id}
+			</if>
+			<if test="type != null and type != ''">
+				AND a.type = #{type}
+			</if>
+			<if test="state != null and state != ''">
+				AND a.state = #{state}
+			</if>
+			<if test="year != null and year != ''">
+				AND YEAR(a.buy_date)=#{year}
+			</if>
+			<if test="month != null and month != ''">
+				AND MONTH(a.buy_date)=#{month}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findPageList" resultType="ScoFinalReport">
+		SELECT
+		<include refid="scoFinalReportColumns"/>
+		FROM sco_final_report a
+		<include refid="scoFinalReportJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="createBy != null and createBy.id != null and createBy.id != ''">
+				AND a.create_by = #{createBy.id}
+			</if>
+			<if test="office != null and office.id != null and office.id != ''">
+				AND a.office_id = #{office.id}
+			</if>
+			<if test="department != null and department != ''">
+				AND a.department = #{department}
+			</if>
+			<if test="identifier != null and identifier != ''">
+				AND a.identifier = #{identifier}
+			</if>
+			<if test="linkman != null and linkman != ''">
+				AND a.linkman = #{linkman}
+			</if>
+			<if test="serTreeId != null and serTreeId.id != null and serTreeId.id != ''">
+				AND a.ser_tree_id = #{serTreeId.id}
+			</if>
+			<if test="subId != null and subId.id != null and subId.id != ''">
+				AND a.sub_id = #{subId.id}
+			</if>
+			<if test="thirdId != null and thirdId.id != null and thirdId.id != ''">
+				AND a.third_id = #{thirdId.id}
+			</if>
+			<if test="type != null and type != ''">
+				AND a.type = #{type}
+			</if>
+			<if test="state != null and state != ''">
+				AND a.state = #{state}
+			</if>
+			<if test="year != null and year != ''">
+				AND YEAR(a.buy_date)=#{year}
+			</if>
+			<if test="month != null and month != ''">
+				AND MONTH(a.buy_date)=#{month}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	
+	<select id="findAllList" resultType="ScoFinalReport">
+		SELECT 
+			<include refid="scoFinalReportColumns"/>
+		FROM sco_final_report a
+		<include refid="scoFinalReportJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<!--获取当前用户验收单所有年份-->
+	<select id="getYear" resultType="String">
+		SELECT YEAR(a.buy_date) year FROM sco_final_report a
+		<where>
+			a.del_flag = 0
+			<if test="id != null and id != ''">
+				AND a.create_by = #{id}
+			</if>
+		</where>
+		GROUP BY YEAR(a.buy_date)
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO sco_final_report(
+			id,
+			item_name,
+			serial_number,
+			office_id,
+			office_name,
+			department,
+			invoicenum,
+			identifier,
+			identifier_type,
+			buy_date,
+			linkman,
+			mobile,
+			ser_tree_id,
+			sub_id,
+			third_id,
+			type,
+			specs,
+			pages,
+			quantity,
+			other_price,
+			state,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			paper_type_id,
+			description,
+			price,
+			pic_url,
+			units
+		) VALUES (
+			#{id},
+			#{itemName},
+			#{serialNumber},
+			#{office.id},
+			#{officeName},
+			#{department},
+			#{invoicenum},
+			#{identifier},
+			#{identifierType},
+			#{buyDate},
+			#{linkman},
+			#{mobile},
+			#{serTreeId.id},
+			#{subId.id},
+			#{thirdId.id},
+			#{type},
+			#{specs},
+			#{pages},
+			#{quantity},
+			#{otherPrice},
+			#{state},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{paperTypeId.id},
+			#{description},
+			#{price},
+			#{picUrl},
+			#{units}
+			
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE sco_final_report SET 	
+			item_name = #{itemName},
+			office_id = #{office.id},
+			office_name = #{officeName},
+			department = #{department},
+			invoicenum = #{invoicenum},
+			identifier = #{identifier},
+			identifier_type = #{identifierType},
+			buy_date = #{buyDate},
+			linkman = #{linkman},
+			mobile = #{mobile},
+			ser_tree_id = #{serTreeId.id},
+			sub_id = #{subId.id},
+			third_id = #{thirdId.id},
+			type = #{type},
+			specs = #{specs},
+			pages = #{pages},
+			quantity = #{quantity},
+			other_price = #{otherPrice},
+			state = #{state},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE sco_final_report SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="updateState">
+		UPDATE sco_final_report SET
+		state = #{state}
+		WHERE id = #{id}
+	</update>
+
+	<select id="findUnFinish" resultType="ScoFinalReport">
+		SELECT
+		<include refid="scoFinalReportColumns"/>
+		FROM sco_final_report a
+		<include refid="scoFinalReportJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			AND state = #{state}
+			<if test="createBy != null and createBy.id != null and createBy.id != ''">
+				AND a.create_by = #{createBy.id}
+			</if>
+			<if test="type != null and type != ''">
+				AND a.type=#{type}
+			</if>
+		</where>
+		ORDER BY a.update_date DESC LIMIT 1
+	</select>
+
+	<!--结算单统计-->
+	<select id="statistic" resultType="ScoFinalStatistic">
+		SELECT
+			YEAR (a.buy_date) YEAR,MONTH (a.buy_date) MONTH,
+			(SELECT	count(id) FROM `sco_final_report` WHERE
+				MONTH (buy_date) = MONTH (a.buy_date)
+				and create_by = a.create_by
+				and del_flag=#{DEL_FLAG_NORMAL}
+				and (state = 2 OR state = 3)
+				GROUP BY MONTH (buy_date)) AS "finalNumbers",
+			sum(s.agrt_price * f.numbers) sparepartAmt,
+			sum(l.agrt_price * f.numbers) laborAmt,
+			sum(t.agrt_price * f.numbers) tyreAmt,
+			sum(o.agrt_price * f.numbers) oilAmt,
+			a.other_price otherAmt,
+			 sum(
+			      
+			      CASE  
+			 		WHEN a.price * a.quantity >=0 THEN 
+			 		     a.price * a.quantity
+			 		ELSE
+			 			0
+			 	  end	
+			      ) printsAmt
+		FROM sco_final_report a
+			LEFT JOIN sco_ser_final f ON a.id = f.report_id and f.del_flag = #{DEL_FLAG_NORMAL}
+			LEFT JOIN sco_sparepart s ON s.id = f.ser_id  and s.del_flag = #{DEL_FLAG_NORMAL}
+			LEFT JOIN sco_labor l ON l.id = f.ser_id  and l.del_flag = #{DEL_FLAG_NORMAL}
+			LEFT JOIN sco_tyre t ON t.id = f.ser_id  and t.del_flag = #{DEL_FLAG_NORMAL}
+			LEFT JOIN sco_oil o ON o.id = f.ser_id  and o.del_flag = #{DEL_FLAG_NORMAL}
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			AND (a.state = 2 OR a.state = 3)
+			<if test="createBy != null and createBy.id != null and createBy.id != ''">
+				AND a.create_by = #{createBy.id}
+			</if>
+			<if test="year != null and year != ''">
+				AND YEAR(a.buy_date)=#{year}
+			</if>
+			<if test="month != null and month != '' and month != '全部'">
+				AND MONTH(a.buy_date)=#{month}
+			</if>
+			<if test="serTreeId != null and serTreeId.id != null and serTreeId.id != ''">
+				AND a.ser_tree_id = #{serTreeId.id}
+			</if>
+			<if test="subId != null and subId.id != null and subId.id != ''">
+				AND a.sub_id = #{subId.id}
+			</if>
+			<if test="thirdId != null and thirdId.id != null and thirdId.id != ''">
+				AND a.third_id = #{thirdId.id}
+			</if>
+			<if test="type != null and type != ''">
+				AND a.type=#{type}
+			</if>
+		</where>
+		GROUP BY MONTH(a.buy_date)
+	</select>
+
+	<!--管理员审核结算单列表-->
+	<select id="auditList" resultType="ScoFinalStatistic">    
+	
+	    SELECT
+			id "report.id",
+			create_by AS "create_by.id",
+			createname AS "create_by.name",
+			buy_date "report.buyDate",
+			department "report.department",
+			state "report.state",
+			type "report.type",
+			identifier "report.identifier",
+			serial_number "report.serialNumber",
+			invoicenum "report.invoicenum",
+			other_price "report.otherPrice",
+			serTreeId AS "report.serTreeId.name",
+			subId AS "report.subId.name",
+			thirdId AS "report.thirdId.name",
+			sparepartAmt,
+			laborAmt,
+			tyreAmt,
+			oilAmt,
+			subtotal
+			
+		from (
+	
+		SELECT
+			a.id id,
+			a.create_by AS create_by,
+			u. NAME AS createname,
+			a.buy_date buy_date,
+			a.department department,
+			a.state state,
+			a.type type,
+			a.identifier identifier,
+			a.serial_number serial_number,
+			a.invoicenum invoicenum,
+			a.other_price other_price,
+			t1.name AS serTreeId,
+			t2.name AS subId,
+			t3.name AS thirdId,
+			sum(s.agrt_price * f.numbers) sparepartAmt,
+			sum(l.agrt_price * f.numbers) laborAmt,
+			sum(t.agrt_price * f.numbers) tyreAmt,
+			sum(o.agrt_price * f.numbers) oilAmt,
+			      sum(
+			      
+			      CASE  
+			 		WHEN s.agrt_price * f.numbers >=0 THEN 
+			 		     s.agrt_price * f.numbers
+			 		ELSE
+			 			0
+			 	  end	
+			      )+
+			      sum(
+			      
+			      CASE  
+			 		WHEN l.agrt_price * f.numbers >=0 THEN 
+			 		     l.agrt_price * f.numbers
+			 		ELSE
+			 			0
+			 	  end	
+			      )+
+			      sum(
+			      
+			      CASE  
+			 		WHEN t.agrt_price * f.numbers >=0 THEN 
+			 		     t.agrt_price * f.numbers
+			 		ELSE
+			 			0
+			 	  end	
+			      )+
+			      sum(
+			      
+			      CASE  
+			 		WHEN o.agrt_price * f.numbers >=0 THEN 
+			 		     o.agrt_price * f.numbers
+			 		ELSE
+			 			0
+			 	  end	
+			      )+
+			      CASE  
+			 		WHEN a.other_price>=0 THEN 
+			 		   a.other_price
+			 		ELSE
+			 			0
+			 	  end+
+			      sum(
+			      
+			      CASE  
+			 		WHEN a.price * a.quantity >=0 THEN 
+			 		     a.price * a.quantity
+			 		ELSE
+			 			0
+			 	  end	
+			      )
+    		  as subtotal
+			
+			
+		FROM sco_final_report a
+			LEFT JOIN sco_ser_final f ON a.id = f.report_id and f.del_flag = #{DEL_FLAG_NORMAL}
+			LEFT JOIN sco_sparepart s ON s.id = f.ser_id  and s.del_flag = #{DEL_FLAG_NORMAL}
+			LEFT JOIN sco_labor l ON l.id = f.ser_id and l.del_flag = #{DEL_FLAG_NORMAL}
+			LEFT JOIN sco_tyre t ON t.id = f.ser_id and t.del_flag = #{DEL_FLAG_NORMAL}
+			LEFT JOIN sco_oil o ON o.id = f.ser_id and o.del_flag = #{DEL_FLAG_NORMAL}
+			LEFT JOIN sco_ser_tree t1 ON t1.id = a.ser_tree_id
+			LEFT JOIN sco_ser_tree t2 ON t2.id = a.sub_id
+			LEFT JOIN sco_ser_tree t3 ON t3.id = a.third_id
+			LEFT JOIN sys_user u ON u.id = a.create_by
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL} and ( f.del_flag = #{DEL_FLAG_NORMAL} or f.del_flag is null )
+			
+			<if test="createBy != null and createBy.id != null and createBy.id != ''">
+				AND a.create_by = #{createBy.id}
+			</if>
+			<if test="report !=null and report.state != null and report.state != ''">
+				AND a.state=#{report.state}
+			</if>
+			<if test="report !=null and report.department != null and report.department != ''">
+				AND a.department LIKE
+				<if test="dbName == 'oracle'">'%'||#{report.department}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{report.department}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{report.department},'%')</if>
+			</if>
+			<if test="type != null and type != ''">
+				AND a.type=#{type}
+			</if>
+			<if test="year != null and year != ''">
+				AND YEAR(a.buy_date)=#{year}
+			</if>
+			<if test="month != null and month != '' and month != '全部'">
+				AND MONTH(a.buy_date)=#{month}
+			</if>
+			<if test="identifier != null and identifier != '' and identifier != '全部'">
+				AND a.identifier=#{identifier}
+			</if>
+		</where>
+		GROUP By a.id
+		
+		
+		) a
+		<where>
+			1=1 
+			<if test="minSubtotal != null and minSubtotal != ''">
+				AND subtotal >=#{minSubtotal}
+			</if>
+			<if test="maxSubtotal != null and maxSubtotal != ''">
+				AND subtotal <![CDATA[  <=  ]]>  #{maxSubtotal}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+
+	</select>
+
+	<!--管理员结算单统计-->
+	<select id="adminStatistic" resultType="ScoFinalStatistic">
+		SELECT
+			a.create_by AS "create_by.id",u. NAME AS "create_by.name",
+			YEAR (a.buy_date) AS "year",MONTH (a.buy_date) AS "month",
+			(SELECT	count(id) FROM `sco_final_report` WHERE
+				MONTH (buy_date) = MONTH (a.buy_date)
+				and create_by = a.create_by
+				and del_flag=#{DEL_FLAG_NORMAL}
+				and (state = 2 OR state = 3)
+				GROUP BY MONTH (buy_date)) AS "finalNumbers",
+			sum(s.agrt_price * f.numbers) sparepartAmt,
+			sum(l.agrt_price * f.numbers) laborAmt,
+			sum(t.agrt_price * f.numbers) tyreAmt,
+			sum(o.agrt_price * f.numbers) oilAmt,
+			a.other_price otherAmt
+		FROM sco_final_report a
+			LEFT JOIN sco_ser_final f ON a.id = f.report_id and f.del_flag = #{DEL_FLAG_NORMAL}
+			LEFT JOIN sco_sparepart s ON s.id = f.ser_id  and s.del_flag = #{DEL_FLAG_NORMAL}
+			LEFT JOIN sco_labor l ON l.id = f.ser_id and l.del_flag = #{DEL_FLAG_NORMAL}
+			LEFT JOIN sco_tyre t ON t.id = f.ser_id and t.del_flag = #{DEL_FLAG_NORMAL}
+			LEFT JOIN sco_oil o ON o.id = f.ser_id and o.del_flag = #{DEL_FLAG_NORMAL}
+			LEFT JOIN sys_user u ON u.id = a.create_by
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			AND (a.state = 2 OR a.state = 3)
+			<if test="year != null and year != ''">
+				AND YEAR(a.buy_date)=#{year}
+			</if>
+			<if test="month != null and month != '' and month != '全部'">
+				AND MONTH(a.buy_date)=#{month}
+			</if>
+			<if test="identifier != null and identifier != ''">
+				AND identifier LIKE
+				concat('%',#{identifier},'%')
+			</if>
+			<if test="serTreeId != null and serTreeId.id != null and serTreeId.id != ''">
+				AND a.ser_tree_id = #{serTreeId.id}
+			</if>
+			<if test="department != null and department != ''">
+				AND a.department LIKE
+				<if test="dbName == 'oracle'">'%'||#{department}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{department}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{department},'%')</if>
+			</if>
+			<if test="createBy != null and createBy.id != null and createBy.id != ''">
+				AND a.create_by = #{createBy.id}
+			</if>
+			<if test="type != null and type != ''">
+				AND a.type=#{type}
+			</if>
+		</where>
+		GROUP BY MONTH(a.buy_date),a.create_by
+		ORDER BY a.create_by,MONTH(a.buy_date) asc
+	</select>
+	
+	
+	<select id="selectIdentifier" resultType="java.lang.String">
+	select distinct identifier from sco_final_report a
+	</select>
+</mapper>

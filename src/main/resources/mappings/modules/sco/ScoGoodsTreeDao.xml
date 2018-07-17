@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.sco.dao.ScoGoodsTreeDao">
+    
+	<sql id="scoGoodsTreeColumns">
+		a.id AS "id",
+		a.parent_id AS "parent.id",
+		a.parent_ids AS "parentIds",
+		a.name AS "name",
+		a.descr AS "descr",
+		a.type AS "type",
+		a.sort AS "sort",
+		a.user_id AS "user.id",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag"
+	</sql>
+	<!--u8.name AS "user.name"-->
+
+	<sql id="scoGoodsTreeJoins">
+		LEFT JOIN sys_user u8 ON u8.id = a.user_id
+	</sql>
+    
+	<select id="get" resultType="ScoGoodsTree">
+		SELECT 
+			<include refid="scoGoodsTreeColumns"/>
+		FROM sco_goods_tree a
+		<include refid="scoGoodsTreeJoins"/>
+		WHERE a.id = #{id}
+	</select>
+
+	<select id="getByParentId" resultType="ScoGoodsTree">
+		SELECT
+		<include refid="scoGoodsTreeColumns"/>
+		FROM sco_goods_tree a
+		WHERE
+		a.parent_id = #{parentId}
+		AND a.del_flag = 0
+	</select>
+
+	<select id="getByName" resultType="ScoGoodsTree">
+		SELECT
+		<include refid="scoGoodsTreeColumns"/>
+		FROM sco_goods_tree a
+		WHERE a.name = #{name} and a.parent_id = #{parentId} and a.user_id = #{userId}
+	</select>
+
+	<select id="getByParentIds" resultType="ScoGoodsTree">
+		SELECT
+		<include refid="scoGoodsTreeColumns"/>
+		FROM sco_goods_tree a
+		WHERE a.parent_id in
+		<foreach item="parentId" collection="array" separator="," open="(" close=")" index="">
+			#{parentId, jdbcType=VARCHAR}
+		</foreach>
+	</select>
+
+	<select id="getByIds" resultType="ScoGoodsTree">
+		SELECT
+		<include refid="scoGoodsTreeColumns"/>
+		FROM sco_goods_tree a
+		WHERE a.id in
+		<foreach item="id" collection="array" separator="," open="(" close=")" index="">
+			#{id, jdbcType=VARCHAR}
+		</foreach>
+	</select>
+	
+	<select id="findList" resultType="ScoGoodsTree">
+		SELECT 
+			<include refid="scoGoodsTreeColumns"/>
+		FROM sco_goods_tree a
+		<include refid="scoGoodsTreeJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="parent != null and parent.id != null and parent.id != ''">
+				AND a.parent_id = #{parent.id}
+			</if>
+			<if test="parentIds != null and parentIds != ''">
+				AND a.parent_ids LIKE 
+					<if test="dbName == 'oracle'">'%'||#{parentIds}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{parentIds}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{parentIds},'%')</if>
+			</if>
+		</where>
+		ORDER BY a.sort ASC
+	</select>
+	
+	<select id="findAllList" resultType="ScoGoodsTree">
+		SELECT 
+			<include refid="scoGoodsTreeColumns"/>
+		FROM sco_goods_tree a
+		<include refid="scoGoodsTreeJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>
+		ORDER BY a.sort ASC
+	</select>
+	
+	<select id="findByParentIdsLike" resultType="ScoGoodsTree">
+		SELECT
+			a.id,
+			a.parent_id AS "parent.id",
+			a.parent_ids
+		FROM sco_goods_tree a
+		<include refid="scoGoodsTreeJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			AND a.parent_ids LIKE #{parentIds}
+		</where>
+		ORDER BY a.sort ASC
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO sco_goods_tree(
+			id,
+			parent_id,
+			parent_ids,
+			name,
+			descr,
+			type,
+			sort,
+			user_id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{id},
+			#{parent.id},
+			#{parentIds},
+			#{name},
+			#{descr},
+			#{type},
+			#{sort},
+			#{user.id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE sco_goods_tree SET 	
+			name = #{name},
+			descr = #{descr},
+			sort = #{sort},
+			user_id = #{user.id}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="updateParentIds">
+		UPDATE sco_goods_tree SET 
+			parent_id = #{parent.id}, 
+			parent_ids = #{parentIds}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE sco_goods_tree SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

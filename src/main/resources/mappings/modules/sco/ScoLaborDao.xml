@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.sco.dao.ScoLaborDao">
+    
+	<sql id="scoLaborColumns">
+		a.id AS "id",
+		a.ser_tree_id AS "serTreeId.id",
+		a.sub_id AS "subId.id",
+		a.third_id AS "thirdId.id",
+		a.category AS "category",
+		a.name AS "name",
+		a.normal_price AS "normalPrice",
+		a.agrt_price AS "agrtPrice",
+		a.type AS "type",
+		a.state AS "state",
+		a.commitment AS "commitment",
+		a.create_by AS "createBy.id",
+		u. name AS "createBy.name",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		t1.name AS "serTreeId.name",
+		t2.name AS "subId.name",
+		t3.name AS "thirdId.name"
+	</sql>
+	
+	<sql id="scoLaborJoins">
+		LEFT JOIN sco_ser_tree t1 ON t1.id = a.ser_tree_id
+		LEFT JOIN sco_ser_tree t2 ON t2.id = a.sub_id
+		LEFT JOIN sco_ser_tree t3 ON t3.id = a.third_id
+		LEFT JOIN sys_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="ScoLabor">
+		SELECT 
+			<include refid="scoLaborColumns"/>
+		FROM sco_labor a
+		<include refid="scoLaborJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="ScoLabor">
+		SELECT 
+			<include refid="scoLaborColumns"/>
+		FROM sco_labor a
+		<include refid="scoLaborJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="createBy != null and createBy.id != null and createBy.id != ''">
+				AND a.create_by = #{createBy.id}
+			</if>
+			<if test="serTreeId != null and serTreeId.id != null and serTreeId.id != ''">
+				AND a.ser_tree_id = #{serTreeId.id}
+			</if>
+			<if test="subId != null and subId.id != null and subId.id != ''">
+				AND a.sub_id = #{subId.id}
+			</if>
+			<if test="thirdId != null and thirdId.id != null and thirdId.id != ''">
+				AND a.third_id = #{thirdId.id}
+			</if>
+			<if test="category != null and category != ''">
+				AND a.category = #{category}
+			</if>
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+			</if>
+			<if test="type != null and type != ''">
+				AND a.type = #{type}
+			</if>
+			<if test="state != null and state != ''">
+				AND a.state = #{state}
+			</if>
+			
+			<if test="minPrice != null and minPrice != ''">
+				AND a.agrt_price >=#{minPrice}
+			</if>
+			<if test="maxPrice != null and maxPrice != ''">
+				AND a.agrt_price <![CDATA[  <=  ]]>  #{maxPrice}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="ScoLabor">
+		SELECT 
+			<include refid="scoLaborColumns"/>
+		FROM sco_labor a
+		<include refid="scoLaborJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO sco_labor(
+			id,
+			ser_tree_id,
+			sub_id,
+			third_id,
+			category,
+			name,
+			normal_price,
+			agrt_price,
+			type,
+			state,
+			commitment,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{id},
+			#{serTreeId.id},
+			#{subId.id},
+			#{thirdId.id},
+			#{category},
+			#{name},
+			#{normalPrice},
+			#{agrtPrice},
+			#{type},
+			#{state},
+			#{commitment},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE sco_labor SET 	
+			ser_tree_id = #{serTreeId.id},
+			sub_id = #{subId.id},
+			third_id = #{thirdId.id},
+			category = #{category},
+			name = #{name},
+			normal_price = #{normalPrice},
+			agrt_price = #{agrtPrice},
+			type = #{type},
+			commitment = #{commitment},
+			remarks = #{remarks},
+			state = #{state}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE sco_labor SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<update id="updateState">
+		UPDATE sco_labor SET
+		state = #{state}
+		WHERE id = #{id}
+	</update>
+	
+	
+</mapper>

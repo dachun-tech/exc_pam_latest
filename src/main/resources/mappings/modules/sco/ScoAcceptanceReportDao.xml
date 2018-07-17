@@ -1,0 +1,570 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.sco.dao.ScoAcceptanceReportDao">
+    
+	<sql id="scoAcceptanceReportColumns">
+		a.id AS "id",
+		a.serial_number AS "serialNumber",
+		a.office_id AS "office.id",
+		a.office_name AS "officeName",
+		a.invoicenum AS "invoicenum",
+		a.buy_date AS "buyDate",
+		a.department AS "department",
+		a.linkman AS "linkman",
+		a.mobile AS "mobile",
+		a.state AS "state",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		o3.name AS "office.name"
+	</sql>
+	
+	<sql id="scoAcceptanceReportJoins">
+		LEFT JOIN sys_office o3 ON o3.id = a.office_id
+	</sql>
+    
+	<select id="get" resultType="ScoAcceptanceReport">
+		SELECT 
+			<include refid="scoAcceptanceReportColumns"/>
+		FROM sco_acceptance_report a
+		<include refid="scoAcceptanceReportJoins"/>
+		WHERE a.id = #{id}
+	</select>
+
+	<select id="findUnFinish" resultType="ScoAcceptanceReport">
+		SELECT
+		<include refid="scoAcceptanceReportColumns"/>
+		FROM sco_acceptance_report a
+		<include refid="scoAcceptanceReportJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			AND state = #{state}
+			<if test="createBy != null and createBy.id != null and createBy.id != ''">
+				AND a.create_by = #{createBy.id}
+			</if>
+			<if test="type != null and type != '' ">
+				AND a.type = #{type}
+			</if>
+		</where>
+		ORDER BY a.update_date DESC LIMIT 1
+	</select>
+
+	<select id="findList" resultType="ScoAcceptanceReport">
+		SELECT 
+			<include refid="scoAcceptanceReportColumns"/>
+		FROM sco_acceptance_report a
+		<include refid="scoAcceptanceReportJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="department != null and department != ''">
+				AND a.department = #{department}
+			</if>
+			<if test="createBy != null and createBy.id != null and createBy.id != ''">
+				AND a.create_by = #{createBy.id}
+			</if>
+			<if test="type != null and type != '' ">
+				AND a.type = #{type}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findPageList" resultType="ScoAcceptanceReport">
+		SELECT
+		<include refid="scoAcceptanceReportColumns"/>
+		,sum(g.numbers) AS "goodsNumbers",
+		
+			  sum(
+			      
+		      CASE  
+		 		WHEN c.agrt_price*g.numbers >=0 THEN 
+		 		     c.agrt_price*g.numbers
+		 		ELSE
+		 			0
+		 	  end	
+		      )+
+		      sum(
+		      
+		      CASE  
+		 		WHEN p.price*g.numbers >=0 THEN 
+		 		     p.price*g.numbers
+		 		ELSE
+		 			0
+		 	  end	
+		      )  AS "subtotal"
+		
+		FROM sco_acceptance_report a
+		<include refid="scoAcceptanceReportJoins"/>
+		LEFT JOIN sco_goods_acceptance g ON g.ar_id = a.id
+		LEFT JOIN sco_goods c ON c.id = g.goods_id
+		LEFT JOIN sco_prints p ON p.id = g.goods_id
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL} and g.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="department != null and department != ''">
+				AND a.department = #{department}
+			</if>
+			<if test="createBy != null and createBy.id != null and createBy.id != ''">
+				AND a.create_by = #{createBy.id}
+			</if>
+			<if test="type != null and type != '' ">
+				AND a.type = #{type}
+			</if>
+			<if test="state != null and state != '' ">
+				AND a.state = #{state}
+			</if>
+		</where>
+		GROUP BY g.ar_id
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="ScoAcceptanceReport">
+		SELECT 
+			<include refid="scoAcceptanceReportColumns"/>
+		FROM sco_acceptance_report a
+		<include refid="scoAcceptanceReportJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="type != null and type != '' ">
+				AND a.type = #{type}
+			</if>
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO sco_acceptance_report(
+			id,
+			serial_number,
+			office_id,
+			office_name,
+			invoicenum,
+			buy_date,
+			department,
+			linkman,
+			mobile,
+			state,
+			type,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{id},
+			#{serialNumber},
+			#{office.id},
+			#{officeName},
+			#{invoicenum},
+			#{buyDate},
+			#{department},
+			#{linkman},
+			#{mobile},
+			#{state},
+			#{type},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE sco_acceptance_report SET 	
+			office_name = #{officeName},
+			invoicenum = #{invoicenum},
+			department = #{department},
+			linkman = #{linkman},
+			mobile = #{mobile},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+
+	<update id="updateState">
+		UPDATE sco_acceptance_report SET
+		state = #{state}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE sco_acceptance_report SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+<!--获取当前用户验收单所有年份-->
+	<select id="getYear" resultType="ScoAcceptanceStatistic">
+		SELECT YEAR(a.buy_date) year FROM sco_acceptance_report a
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="createBy != null and createBy.id != null and createBy.id != ''">
+				AND a.create_by = #{createBy.id}
+			</if>
+			<if test="type != null and type != '' ">
+				AND a.type = #{type}
+			</if>
+		</where>
+		GROUP BY YEAR(a.buy_date)
+	</select>
+
+<!--验收单统计-->
+	<select id="statistic" resultType="ScoAcceptanceStatistic">
+		SELECT
+			YEAR(a.buy_date) year, MONTH(a.buy_date) month,
+			(SELECT count(id) FROM `sco_acceptance_report` WHERE
+				MONTH (buy_date) = MONTH (a.buy_date)
+				and create_by = a.create_by
+				and del_flag=#{DEL_FLAG_NORMAL} 
+				and (state = 2 OR state = 3)
+				GROUP BY MONTH (buy_date)
+				) AS "receivingNumbers",
+			sum(g.numbers) goodsNumbers,
+			
+			sum(
+			      
+		      CASE  
+		 		WHEN c.agrt_price*g.numbers >=0 THEN 
+		 		     c.agrt_price*g.numbers
+		 		ELSE
+		 			0
+		 	  end	
+		      )+
+		      sum(
+		      
+		      CASE  
+		 		WHEN p.price*g.numbers >=0 THEN 
+		 		     p.price*g.numbers
+		 		ELSE
+		 			0
+		 	  end	
+		      )  AS "subtotal"
+		FROM sco_acceptance_report a
+		  LEFT JOIN sco_goods_acceptance g ON a.id = g.ar_id  
+		  LEFT JOIN sco_goods c ON c.id=g.goods_id   
+		  LEFT JOIN sco_prints p ON p.id=g.goods_id  
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL} and g.del_flag = #{DEL_FLAG_NORMAL}
+			and (( c.del_flag >=0  and c.del_flag = #{DEL_FLAG_NORMAL} ) or 
+		 		(p.del_flag  >=0  and p.del_flag = #{DEL_FLAG_NORMAL} ))
+			AND (a.state = 2 OR a.state = 3)
+			<if test="createBy != null and createBy.id != null and createBy.id != ''">
+				AND a.create_by = #{createBy.id}
+			</if>
+			<if test="year != null and year != ''">
+				AND YEAR(a.buy_date)=#{year}
+			</if>
+			<if test="type != null and type != '' ">
+				AND a.type = #{type}
+				
+				<if test=" type == '3'.toString() and 	goodsTreeId != null and goodsTreeId != ''">
+					AND c.goods_tree_id = #{goodsTreeId}
+				</if>
+				<if test="(type == '5'.toString() or  type =='6'.toString() ) and   goodsTreeId != null and goodsTreeId != ''">
+					AND p.print_tree_id = #{goodsTreeId}
+				</if>
+				
+				<if test="type == '3'.toString() and  subId != null and subId != ''">
+					AND c.sub_id = #{subId}
+				</if>
+				<if test="(type == '5'.toString() or  type =='6'.toString() ) and  subId != null and subId != ''">
+					AND p.sub_id = #{subId}
+				</if>
+			</if>
+		</where>
+		GROUP BY MONTH(a.buy_date);
+	</select>
+
+	<!--验收单统计-->
+	<select id="auditList" resultType="AdminScoAcceptanceStatistic">
+	    select  
+			id "report.id",
+			create_by AS "create_by.id",
+			create_byname AS "create_by.name",
+			buy_date "report.buyDate",
+			department "report.department",
+			state "report.state",
+			invoicenum "report.invoicenum",
+			goodsNumbers goodsNumbers,
+			subtotal subtotal 
+		from 
+	    (
+		SELECT
+			a.id id,
+			a.create_by AS create_by,
+			a.update_date AS update_date,
+			u.`name` AS create_byname,
+			a.buy_date buy_date,
+			a.department department,
+			a.state state,
+			a.invoicenum invoicenum,
+			SUM(g.numbers) goodsNumbers,
+			sum(
+			      
+		      CASE  
+		 		WHEN c.agrt_price*g.numbers >=0 THEN 
+		 		     c.agrt_price*g.numbers
+		 		ELSE
+		 			0
+		 	  end	
+		      )+
+		      sum(
+		      
+		      CASE  
+		 		WHEN p.price*g.numbers >=0 THEN 
+		 		     p.price*g.numbers
+		 		ELSE
+		 			0
+		 	  end	
+		      )  AS "subtotal"
+		FROM sco_acceptance_report a
+		LEFT JOIN sco_goods_acceptance g ON a.id = g.ar_id  
+		LEFT JOIN sco_goods c ON c.id=g.goods_id  
+		LEFT JOIN sco_prints p ON p.id=g.goods_id   
+		LEFT JOIN sys_user u ON u.id=a.create_by
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL} and g.del_flag = #{DEL_FLAG_NORMAL}
+		 		and (( c.del_flag >=0  and c.del_flag = #{DEL_FLAG_NORMAL} ) or 
+		 		(p.del_flag  >=0  and p.del_flag = #{DEL_FLAG_NORMAL} ))
+			<if test="createBy != null and createBy.id != null and createBy.id != ''">
+				AND a.create_by = #{createBy.id}
+			</if>
+			<if test="report !=null and report.state != null and report.state != ''">
+				AND a.state=#{report.state}
+			</if>
+			<if test="report !=null and report.department != null and report.department != ''">
+				AND a.department LIKE
+				<if test="dbName == 'oracle'">'%'||#{report.department}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{report.department}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{report.department},'%')</if>
+			</if>
+			
+			<if test="year != null and year != ''">
+				AND YEAR(a.buy_date)=#{year}
+			</if>
+			<if test="month != null and month != '' and month != '全部'">
+				AND MONTH(a.buy_date)=#{month}
+			</if>
+			<if test="type != null and type != '' ">
+				AND a.type = #{type}
+			</if>
+		</where>
+		GROUP BY g.ar_id
+		
+		)  a
+		<where>
+			1=1 
+			<if test="minSubtotal != null and minSubtotal != ''">
+				AND subtotal >=#{minSubtotal}
+			</if>
+			<if test="maxSubtotal != null and maxSubtotal != ''">
+				AND subtotal <![CDATA[  <=  ]]>  #{maxSubtotal}
+			</if>
+		</where>
+		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<!--验收单统计-->
+	<select id="adminStatistic" resultType="AdminScoAcceptanceStatistic">
+
+		SELECT
+		a.create_by AS "create_by.id",
+		c.name AS "goodsName",
+		u.name AS "create_by.name",
+		DATE(MIN(CAST(a.buy_date AS CHAR))) AS "year",
+		DATE(MAX(CAST(a.buy_date AS CHAR))) AS "month",
+		(SELECT count(id) FROM `sco_acceptance_report` WHERE
+		create_by = a.create_by
+		<if test="beginDate != null and beginDate != ''">
+			AND date(buy_date) >= date(#{beginDate})
+		</if>
+		<if test="endDate != null and endDate != ''">
+			AND date(#{endDate}) >= date(buy_date)
+		</if>
+		and del_flag=#{DEL_FLAG_NORMAL}
+		and (state = 2 OR state = 3)
+		GROUP BY a.create_by
+		) AS "receivingNumbers",
+		sum(g.numbers) AS "goodsNumbers",
+		sum(
+
+		CASE
+		WHEN c.agrt_price*g.numbers >=0 THEN
+		c.agrt_price*g.numbers
+		ELSE
+		0
+		end
+		)+
+		sum(
+
+		CASE
+		WHEN p.price*g.numbers >=0 THEN
+		p.price*g.numbers
+		ELSE
+		0
+		end
+		)  AS "subtotal"
+		FROM sco_acceptance_report a
+		LEFT JOIN sco_goods_acceptance g ON a.id = g.ar_id
+		LEFT JOIN sco_goods c ON c.id=g.goods_id
+		LEFT JOIN sco_prints p ON p.id=g.goods_id
+		LEFT JOIN sys_user u ON u.id=a.create_by
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}  and g.del_flag = #{DEL_FLAG_NORMAL}
+			and (( c.del_flag >=0  and c.del_flag = #{DEL_FLAG_NORMAL} ) or
+			(p.del_flag  >=0  and p.del_flag = #{DEL_FLAG_NORMAL} ))
+			AND (a.state = 2 OR a.state = 3)
+			<if test="createBy != null and createBy.id != null and createBy.id != ''">
+				AND a.create_by = #{createBy.id}
+			</if>
+			<if test="createBy != null and createBy.id != null and createBy.id != ''">
+				AND a.create_by = #{createBy.id}
+			</if>
+			<if test="goodsName != null and goodsName != ''">
+				AND c.name = #{goodsName}
+			</if>
+			<if test="report !=null and report.department != null and report.department != ''">
+				AND a.department LIKE
+				<if test="dbName == 'oracle'">'%'||#{report.department}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{report.department}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{report.department},'%')</if>
+			</if>
+			<if test="beginDate != null and beginDate != ''">
+				AND date(a.buy_date) >= date(#{beginDate})
+			</if>
+			<if test="endDate != null and endDate != ''">
+				AND date(#{endDate}) >= date(a.buy_date)
+			</if>
+			<if test="type != null and type != '' ">
+				AND a.type = #{type}
+
+				<if test=" type == '3'.toString() and 	goodsTreeId != null and goodsTreeId != ''">
+					AND c.goods_tree_id = #{goodsTreeId}
+				</if>
+				<if test="(type == '5'.toString() or  type =='6'.toString() ) and   goodsTreeId != null and goodsTreeId != ''">
+					AND p.print_tree_id = #{goodsTreeId}
+				</if>
+
+				<if test="type == '3'.toString() and  subId != null and subId != ''">
+					AND c.sub_id = #{subId}
+				</if>
+				<if test="(type == '5'.toString() or  type =='6'.toString() ) and  subId != null and subId != ''">
+					AND p.sub_id = #{subId}
+				</if>
+
+
+
+			</if>
+		</where>
+		GROUP BY a.create_by
+		ORDER BY a.create_by,MONTH(a.buy_date) asc;
+	</select>
+
+	<select id="adminStatisticDepartments" resultType="AdminScoAcceptanceStatistic">
+
+		SELECT
+		a.department AS "adminStaticDepartment"
+		FROM sco_acceptance_report a
+		LEFT JOIN sco_goods_acceptance g ON a.id = g.ar_id
+		LEFT JOIN sco_goods c ON c.id=g.goods_id
+		LEFT JOIN sco_prints p ON p.id=g.goods_id
+		LEFT JOIN sys_user u ON u.id=a.create_by
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}  and g.del_flag = #{DEL_FLAG_NORMAL}
+			and (( c.del_flag >=0  and c.del_flag = #{DEL_FLAG_NORMAL} ) or
+			(p.del_flag  >=0  and p.del_flag = #{DEL_FLAG_NORMAL} ))
+			AND (a.state = 2 OR a.state = 3)
+			<if test="createBy != null and createBy.id != null and createBy.id != ''">
+				AND a.create_by = #{createBy.id}
+			</if>
+			<if test="createBy != null and createBy.id != null and createBy.id != ''">
+				AND a.create_by = #{createBy.id}
+			</if>
+			<if test="goodsName != null and goodsName != ''">
+				AND c.name = #{goodsName}
+			</if>
+			<if test="report !=null and report.department != null and report.department != ''">
+				AND a.department LIKE
+				<if test="dbName == 'oracle'">'%'||#{report.department}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{report.department}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{report.department},'%')</if>
+			</if>
+			<if test="beginDate != null and beginDate != ''">
+				AND date(a.buy_date) >= date(#{beginDate})
+			</if>
+			<if test="endDate != null and endDate != ''">
+				AND date(#{endDate}) >= date(a.buy_date)
+			</if>
+			<if test="type != null and type != '' ">
+				AND a.type = #{type}
+
+				<if test=" type == '3'.toString() and 	goodsTreeId != null and goodsTreeId != ''">
+					AND c.goods_tree_id = #{goodsTreeId}
+				</if>
+				<if test="(type == '5'.toString() or  type =='6'.toString() ) and   goodsTreeId != null and goodsTreeId != ''">
+					AND p.print_tree_id = #{goodsTreeId}
+				</if>
+
+				<if test="type == '3'.toString() and  subId != null and subId != ''">
+					AND c.sub_id = #{subId}
+				</if>
+				<if test="(type == '5'.toString() or  type =='6'.toString() ) and  subId != null and subId != ''">
+					AND p.sub_id = #{subId}
+				</if>
+
+
+
+			</if>
+		</where>
+		GROUP BY a.department
+		ORDER BY a.create_by,MONTH(a.buy_date) asc;
+	</select>
+
+
+	<select id="getDepartmentList" resultType="ScoAcceptanceReport">
+		SELECT department FROM sco_acceptance_report a
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="createBy != null and createBy.id != null and createBy.id != ''">
+				AND a.create_by = #{createBy.id}
+			</if>
+			<if test="type != null and type != '' ">
+				AND a.type = #{type}
+			</if>
+		</where>
+		GROUP BY department
+	</select>
+</mapper>

@@ -1,0 +1,386 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.sco.dao.ScoSerFinalDao">
+    
+	<sql id="scoSerFinalColumns">
+		a.id AS "id",
+		a.report_id AS "reportId",
+		a.ser_id AS "serId",
+		a.numbers AS "numbers",
+		a.ser_type AS "serType",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag"
+	</sql>
+
+	<sql id="scoSerFinalJoins">
+	</sql>
+
+	<!--第一类型-->
+	<sql id="scoFirstColumns">
+		a.id AS "id",
+		a.report_id AS "reportId",
+		a.ser_id AS "serId",
+		a.numbers AS "numbers",
+		a.ser_type AS "serType",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		s.name AS "sparepart.name",
+		s.specs AS "sparepart.specs",
+		s.normal_price AS "normalPrice",
+		s.agrt_price AS "agrtPrice",
+		s.normal_price AS "sparepart.normalPrice",
+		s.agrt_price AS "sparepart.agrtPrice"
+	</sql>
+
+	<sql id="scoFirstJoins">
+		LEFT JOIN sco_sparepart s ON s.id = a.ser_id
+	</sql>
+
+	<!--第二类型-->
+	<sql id="scoSecondColumns">
+		a.id AS "id",
+		a.report_id AS "reportId",
+		a.ser_id AS "serId",
+		a.numbers AS "numbers",
+		a.ser_type AS "serType",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		s.name AS "labor.name",
+		s.normal_price AS "normalPrice",
+		s.agrt_price AS "agrtPrice",
+		s.normal_price AS "labor.normalPrice",
+		s.agrt_price AS "labor.agrtPrice"
+
+	</sql>
+
+	<sql id="scoSecondJoins">
+		LEFT JOIN sco_labor s ON s.id = a.ser_id
+	</sql>
+
+	<!--第三类型-->
+	<sql id="scoThirdColumns">
+		a.id AS "id",
+		a.report_id AS "reportId",
+		a.ser_id AS "serId",
+		a.numbers AS "numbers",
+		a.ser_type AS "serType",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		s.name AS "tyre.name",
+		s.specs AS "tyre.specs",
+		s.normal_price AS "normalPrice",
+		s.agrt_price AS "agrtPrice",
+		s.normal_price AS "tyre.normalPrice",
+		s.agrt_price AS "tyre.agrtPrice"
+	</sql>
+
+	<sql id="scoThirdJoins">
+		LEFT JOIN sco_tyre s ON s.id = a.ser_id
+	</sql>
+
+	<!--第四类型-->
+	<sql id="scoForthColumns">
+		a.id AS "id",
+		a.report_id AS "reportId",
+		a.ser_id AS "serId",
+		a.numbers AS "numbers",
+		a.ser_type AS "serType",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		s.name AS "oil.name",
+		s.quality_grade AS "oil.qualityGrade",
+		s.normal_price AS "normalPrice",
+		s.agrt_price AS "agrtPrice",
+		s.normal_price AS "oil.normalPrice",
+		s.agrt_price AS "oil.agrtPrice"
+	</sql>
+
+	<sql id="scoForthJoins">
+		LEFT JOIN sco_oil s ON s.id = a.ser_id
+	</sql>
+
+
+    <!--第五类型-->
+	<sql id="scoFiveColumns">
+		a.id AS "id",
+		a.report_id AS "reportId",
+		a.ser_id AS "serId",
+		a.numbers AS "numbers",
+		a.ser_type AS "serType",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		s.print_name AS "scoPrints.printName",
+		s.price AS "scoPrints.price",
+		s.price AS "normalPrice",
+		s.price AS "agrtPrice",
+		s.price AS "scoPrints.normalPrice",
+		s.price AS "scoPrints.agrtPrice"
+	</sql>
+
+	<sql id="scoFiveJoins">
+		LEFT JOIN sco_prints s ON s.id = a.ser_id
+	</sql>
+
+<!--第一-->
+	<select id="findFirstList" resultType="ScoSerFinal">
+		SELECT
+		<include refid="scoFirstColumns"/>
+		FROM sco_ser_final a
+		<include refid="scoFirstJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="reportId != null and reportId != ''">
+				AND a.report_id = #{reportId}
+			</if>
+			<if test="serId != null and serId != ''">
+				AND a.ser_id = #{serId}
+			</if>
+			<if test="serType != null and serType != ''">
+				AND a.ser_type = #{serType}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+<!--第二-->
+	<select id="findSecondList" resultType="ScoSerFinal">
+		SELECT
+		<include refid="scoSecondColumns"/>
+		FROM sco_ser_final a
+		<include refid="scoSecondJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="reportId != null and reportId != ''">
+				AND a.report_id = #{reportId}
+			</if>
+			<if test="serId != null and serId != ''">
+				AND a.ser_id = #{serId}
+			</if>
+			<if test="serType != null and serType != ''">
+				AND a.ser_type = #{serType}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+<!--第三-->
+	<select id="findThirdList" resultType="ScoSerFinal">
+		SELECT
+		<include refid="scoThirdColumns"/>
+		FROM sco_ser_final a
+		<include refid="scoThirdJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="reportId != null and reportId != ''">
+				AND a.report_id = #{reportId}
+			</if>
+			<if test="serId != null and serId != ''">
+				AND a.ser_id = #{serId}
+			</if>
+			<if test="serType != null and serType != ''">
+				AND a.ser_type = #{serType}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+<!--第四-->
+	<select id="findForthList" resultType="ScoSerFinal">
+		SELECT
+		<include refid="scoForthColumns"/>
+		FROM sco_ser_final a
+		<include refid="scoForthJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="reportId != null and reportId != ''">
+				AND a.report_id = #{reportId}
+			</if>
+			<if test="serId != null and serId != ''">
+				AND a.ser_id = #{serId}
+			</if>
+			<if test="serType != null and serType != ''">
+				AND a.ser_type = #{serType}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+<!--第四-->
+	<select id="findFiveList" resultType="ScoSerFinal">
+		SELECT
+		<include refid="scoFiveColumns"/>
+		FROM sco_ser_final a
+		<include refid="scoFiveJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="reportId != null and reportId != ''">
+				AND a.report_id = #{reportId}
+			</if>
+			<if test="serId != null and serId != ''">
+				AND a.ser_id = #{serId}
+			</if>
+			<if test="serType != null and serType != ''">
+				AND a.ser_type = #{serType}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="get" resultType="ScoSerFinal">
+		SELECT
+		<include refid="scoSerFinalColumns"/>
+		FROM sco_ser_final a
+		<include refid="scoSerFinalJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="ScoSerFinal">
+		SELECT 
+			<include refid="scoSerFinalColumns"/>
+		FROM sco_ser_final a
+		<include refid="scoSerFinalJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="reportId != null and reportId != ''">
+				AND a.report_id = #{reportId}
+			</if>
+			<if test="serId != null and serId != ''">
+				AND a.ser_id = #{serId}
+			</if>
+			<if test="serType != null and serType != ''">
+				AND a.ser_type = #{serType}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="ScoSerFinal">
+		SELECT 
+			<include refid="scoSerFinalColumns"/>
+		FROM sco_ser_final a
+		<include refid="scoSerFinalJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO sco_ser_final(
+			id,
+			report_id,
+			ser_id,
+			numbers,
+			ser_type,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{id},
+			#{reportId},
+			#{serId},
+			#{numbers},
+			#{serType},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE sco_ser_final SET 	
+			report_id = #{reportId},
+			ser_id = #{serId},
+			numbers = #{numbers},
+			ser_type = #{serType}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE sco_ser_final SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="updateNumbers">
+		UPDATE sco_ser_final SET
+		numbers = #{numbers}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

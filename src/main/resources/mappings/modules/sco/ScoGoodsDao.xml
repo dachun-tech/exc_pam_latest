@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.sco.dao.ScoGoodsDao">
+    
+	<sql id="scoGoodsColumns">
+		a.id AS "id",
+		a.goods_tree_id AS "goodsTreeId",
+		a.sub_name AS "subName",
+		a.sub_id AS "subId",
+		a.name AS "name",
+		a.brand AS "brand",
+		a.goods_model AS "goodsModel",
+		a.normal_price AS "normalPrice",
+		a.agrt_price AS "agrtPrice",
+		a.units AS "units",
+		a.specification AS "specification",
+		a.bar_code AS "barCode",
+		a.is_exist_code AS "isExistCode",
+		a.pic_url AS "picUrl",
+		a.state AS "state",
+		a.goods_no AS "goodsNo",
+		a.create_by AS "createBy.id",
+		u8.name AS "createBy.name",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="scoGoodsJoins">
+		LEFT JOIN sys_user u8 ON u8.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="ScoGoods">
+		SELECT 
+			<include refid="scoGoodsColumns"/>
+		FROM sco_goods a
+		<include refid="scoGoodsJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="ScoGoods">
+		SELECT 
+			<include refid="scoGoodsColumns"/>
+		FROM sco_goods a
+		<include refid="scoGoodsJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="goodsTreeId != null and goodsTreeId != ''">
+				AND a.goods_tree_id = #{goodsTreeId}
+			</if>
+			<if test="subId != null and subId != ''">
+				AND a.sub_id = #{subId}
+			</if>
+			<if test="state != null and state != ''">
+				AND a.state = #{state}
+			</if>
+			<if test="createBy != null and createBy.id != null and createBy.id != ''">
+				AND a.create_by = #{createBy.id}
+			</if>
+			
+			<if test="minPrice != null and minPrice != ''">
+				AND a.agrt_price >=#{minPrice}
+			</if>
+			<if test="maxPrice != null and maxPrice != ''">
+				AND a.agrt_price <![CDATA[  <=  ]]>  #{maxPrice}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="ScoGoods">
+		SELECT 
+			<include refid="scoGoodsColumns"/>
+		FROM sco_goods a
+		<include refid="scoGoodsJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="count" resultType="java.lang.Long">
+		SELECT
+		count(1)
+		FROM sco_goods a
+		<include refid="scoGoodsJoins"/>
+		<where>
+			a.create_by = #{userId} and
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO sco_goods(
+			id,
+			goods_tree_id,
+			sub_name,
+			sub_id,
+			name,
+			brand,
+			goods_model,
+			normal_price,
+			agrt_price,
+			units,
+			specification,
+			bar_code,
+			is_exist_code,
+			pic_url,
+			state,
+			goods_no,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{id},
+			#{goodsTreeId},
+			#{subName},
+			#{subId},
+			#{name},
+			#{brand},
+			#{goodsModel},
+			#{normalPrice},
+			#{agrtPrice},
+			#{units},
+			#{specification},
+			#{barCode},
+			#{isExistCode},
+			#{picUrl},
+			#{state},
+			#{goodsNo},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE sco_goods SET 	
+			goods_tree_id = #{goodsTreeId},
+			sub_name = #{subName},
+			sub_id = #{subId},
+			name = #{name},
+			brand = #{brand},
+			goods_model = #{goodsModel},
+			normal_price = #{normalPrice},
+			agrt_price = #{agrtPrice},
+			units = #{units},
+			specification = #{specification},
+			bar_code = #{barCode},
+			is_exist_code = #{isExistCode},
+			pic_url = #{picUrl},
+			state = #{state},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+
+	<update id="updateState">
+		UPDATE sco_goods SET
+		state = #{state}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE sco_goods SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<select id="statistic" resultType="ScoGoodsStatistic">
+		SELECT goods_tree_id goodsTreeId,COUNT(goods_tree_id) numbers from sco_goods a
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="createBy != null and createBy.id != null and createBy.id != ''">
+				AND a.create_by = #{createBy.id}
+			</if>
+		</where>
+		GROUP BY goods_tree_id
+	</select>
+
+	<select id="getGoodsNameList" resultType="ScoGoods">
+		SELECT name from sco_goods a
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="createBy != null and createBy.id != null and createBy.id != ''">
+				AND a.create_by = #{createBy.id}
+			</if>
+		</where>
+		GROUP BY name
+	</select>
+
+</mapper>

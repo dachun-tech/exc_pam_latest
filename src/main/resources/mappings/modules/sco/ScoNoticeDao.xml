@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.sco.dao.ScoNoticeDao">
+    
+	<sql id="scoNoticeColumns">
+		a.id AS "id",
+		a.office_id AS "office.id",
+		a.role_id AS "roleId",
+		a.office_name AS "officeName",
+		a.title AS "title",
+		a.type AS "type",
+		a.state AS "state",
+		a.content AS "content",
+		a.create_by_name AS "createByName.name",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.publish_date AS "publishDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		o2.name AS "office.name"
+	</sql>
+	
+	<sql id="scoNoticeJoins">
+		LEFT JOIN sys_office o2 ON o2.id = a.office_id
+	</sql>
+    
+	<select id="get" resultType="ScoNotice">
+		SELECT 
+			<include refid="scoNoticeColumns"/>
+		FROM sco_notice a
+		<include refid="scoNoticeJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="ScoNotice">
+		SELECT 
+			<include refid="scoNoticeColumns"/>
+		FROM sco_notice a
+		<include refid="scoNoticeJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="title != null and title != ''">
+				AND a.title LIKE 
+					<if test="dbName == 'oracle'">'%'||#{title}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{title}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{title},'%')</if>
+			</if>
+			<if test="type != null and type != ''">
+				AND a.type = #{type}
+			</if>
+			<if test="state != null and state != ''">
+				AND a.state = #{state}
+			</if>
+			<if test="roleId != null and roleId != ''">
+				AND a.role_id = #{roleId}
+			</if>
+			<if test="roleId == null or roleId == ''">
+				<foreach item="item" collection="currentUser.roleList" index="">
+					<if test="item.id != 1 and item.id != 2">
+						AND a.role_id in
+						<foreach item="item" collection="currentUser.roleList" separator="," open="(" close=")" index="">
+							#{item.id, jdbcType=VARCHAR}
+						</foreach>
+					</if>
+				</foreach>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="ScoNotice">
+		SELECT 
+			<include refid="scoNoticeColumns"/>
+		FROM sco_notice a
+		<include refid="scoNoticeJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<foreach item="item" collection="currentUser.roleList" index="">
+				<if test="item.id != 1 and item.id != 2">
+					AND a.role_id in
+					<foreach item="item" collection="currentUser.roleList" separator="," open="(" close=")" index="">
+						#{item.id, jdbcType=VARCHAR}
+					</foreach>
+				</if>
+			</foreach>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO sco_notice(
+			id,
+			office_id,
+			role_id,
+			office_name,
+			title,
+			type,
+			content,
+			create_by_name,
+			create_by,
+			create_date,
+			publish_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{id},
+			#{office.id},
+			#{roleId},
+			#{officeName},
+			#{title},
+			#{type},
+			#{content},
+			#{createByName.name},
+			#{createBy.id},
+			#{createDate},
+			#{publishDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+
+	<!--state = #{state},-->
+	<update id="update">
+		UPDATE sco_notice SET 	
+			role_id = #{roleId},
+			office_name = #{officeName},
+			title = #{title},
+			type = #{type},
+			content = #{content},
+			create_by_name = #{createByName.name},
+			publish_date = #{publishDate},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE sco_notice SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

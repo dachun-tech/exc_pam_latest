@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.sco.dao.ScoGoodsAcceptanceDao">
+    
+	<sql id="scoGoodsAcceptanceColumns">
+		a.id AS "id",
+		a.ar_id AS "arId",
+		a.goods_id AS "goodsId.id",
+		a.numbers AS "numbers",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		g.name AS "goodsId.name",
+		g.goods_model AS "goodsId.goodsModel",
+		g.normal_price AS "goodsId.normalPrice",
+		g.agrt_price AS "goodsId.agrtPrice",
+		g.specification AS "goodsId.specification",
+		g.units AS "goodsId.units"
+	</sql>
+	<sql id="scoPrintsAcceptanceColumns">
+		a.id AS "id",
+		a.ar_id AS "arId",
+		a.goods_id AS "goodsId.id",
+		a.numbers AS "numbers",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		g.print_name AS "printsId.printName",
+		g.sub_name AS "printsId.subName",
+		g.specification AS "printsId.specification",
+		g.description AS "printsId.description",
+		g.print_page_size AS "printsId.printPageSize",
+		g.paper_type_id AS "printsId.paperTypeId",
+		g.paper_type_name AS "printsId.paperTypeName",
+		g.price AS "printsId.normalPrice",
+		g.price AS "printsId.agrtPrice",
+		g.price AS "printsId.price",
+		g.units AS "printsId.units"
+	</sql>
+	
+	<sql id="scoGoodsAcceptanceJoins">
+		LEFT JOIN sco_goods g ON g.id = a.goods_id 
+	</sql>
+	<sql id="scoPrintsAcceptanceJoins">
+		LEFT JOIN sco_prints g ON g.id = a.goods_id  
+	</sql>
+    
+	<select id="get" resultType="ScoGoodsAcceptance">
+		SELECT 
+			<include refid="scoGoodsAcceptanceColumns"/>
+		FROM sco_goods_acceptance a
+		<include refid="scoGoodsAcceptanceJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="ScoGoodsAcceptance">
+		SELECT 
+			<include refid="scoGoodsAcceptanceColumns"/>
+		FROM sco_goods_acceptance a
+		<include refid="scoGoodsAcceptanceJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			and g.del_flag = #{DEL_FLAG_NORMAL}
+			AND a.ar_id = #{arId}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	<select id="findPrintsList" resultType="ScoGoodsAcceptance">
+		SELECT 
+			<include refid="scoPrintsAcceptanceColumns"/>
+		FROM sco_goods_acceptance a
+		<include refid="scoPrintsAcceptanceJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			AND a.ar_id = #{arId}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="ScoGoodsAcceptance">
+		SELECT 
+			<include refid="scoGoodsAcceptanceColumns"/>
+		FROM sco_goods_acceptance a
+		<include refid="scoGoodsAcceptanceJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO sco_goods_acceptance(
+			id,
+			ar_id,
+			goods_id,
+			numbers,
+			type,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{id},
+			#{arId},
+			#{goodsId.id},
+			#{numbers},
+			#{type},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+
+	<update id="updateNumbers">
+		UPDATE sco_goods_acceptance SET
+		numbers = #{numbers}
+		WHERE id = #{id}
+	</update>
+
+	<update id="update">
+		UPDATE sco_goods_acceptance SET 	
+			ar_id = #{arId},
+			goods_id = #{goodsId.id},
+			numbers = #{numbers}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE sco_goods_acceptance SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.sco.dao.ScoSerTreeDao">
+    
+	<sql id="scoSerTreeColumns">
+		a.id AS "id",
+		a.parent_id AS "parent.id",
+		a.parent_ids AS "parentIds",
+		a.name AS "name",
+		a.firstletter AS "firstletter",
+		a.level AS "level",
+		a.descr AS "descr",
+		a.type AS "type",
+		a.sub_type AS "subType",
+		a.sort AS "sort",
+		a.user_id AS "user.id",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		u10.name AS "user.name"
+	</sql>
+	
+	<sql id="scoSerTreeJoins">
+		LEFT JOIN sys_user u10 ON u10.id = a.user_id
+	</sql>
+    
+	<select id="get" resultType="ScoSerTree">
+		SELECT 
+			<include refid="scoSerTreeColumns"/>
+		FROM sco_ser_tree a
+		<include refid="scoSerTreeJoins"/>
+		WHERE a.id = #{id}
+	</select>
+
+	<select id="getByParentTree" resultType="ScoSerTree">
+		SELECT
+		<include refid="scoSerTreeColumns"/>
+		FROM sco_ser_tree a
+		<include refid="scoSerTreeJoins"/>
+		WHERE
+		a.del_flag = #{DEL_FLAG_NORMAL}
+		<if test="type != null and type != ''">
+			AND a.type = #{type}
+		</if>
+		<if test="subType != null and subType != ''">
+			AND a.sub_type = #{subType}
+		</if>
+		<if test="parent != null and parent.id != null and parent.id != ''">
+			AND a.parent_id = #{parent.id}
+		</if>
+	</select>
+
+	<select id="getByParentId" resultType="ScoSerTree">
+		SELECT
+		<include refid="scoSerTreeColumns"/>
+		FROM sco_ser_tree a
+		<include refid="scoSerTreeJoins"/>
+		WHERE
+		a.parent_id = #{parentId}
+		AND a.del_flag = 0
+	</select>
+	
+	<select id="findList" resultType="ScoSerTree">
+		SELECT 
+			<include refid="scoSerTreeColumns"/>
+		FROM sco_ser_tree a
+		<include refid="scoSerTreeJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="parent != null and parent.id != null and parent.id != ''">
+				AND a.parent_id = #{parent.id}
+			</if>
+			<if test="parentIds != null and parentIds != ''">
+				AND a.parent_ids LIKE 
+					<if test="dbName == 'oracle'">'%'||#{parentIds}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{parentIds}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{parentIds},'%')</if>
+			</if>
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+			</if>
+			<if test="firstletter != null and firstletter != ''">
+				AND a.firstletter = #{firstletter}
+			</if>
+			<if test="level != null and level != ''">
+				AND a.level = #{level}
+			</if>
+			<if test="type != null and type != ''">
+				AND a.type = #{type}
+			</if>
+			<if test="subType != null and subType != ''">
+				AND a.sub_type = #{subType}
+			</if>
+			<if test="user != null and user.id != null and user.id != ''">
+				AND a.user_id = #{user.id}
+			</if>
+		</where>
+		ORDER BY a.sort ASC
+	</select>
+	
+	<select id="findAllList" resultType="ScoSerTree">
+		SELECT 
+			<include refid="scoSerTreeColumns"/>
+		FROM sco_ser_tree a
+		<include refid="scoSerTreeJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>
+		ORDER BY a.sort ASC
+	</select>
+	
+	<select id="findByParentIdsLike" resultType="ScoSerTree">
+		SELECT
+			a.id,
+			a.parent_id AS "parent.id",
+			a.parent_ids
+		FROM sco_ser_tree a
+		<include refid="scoSerTreeJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			AND a.parent_ids LIKE #{parentIds}
+		</where>
+		ORDER BY a.sort ASC
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO sco_ser_tree(
+			id,
+			parent_id,
+			parent_ids,
+			name,
+			firstletter,
+			level,
+			descr,
+			type,
+			sub_type,
+			sort,
+			user_id,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{id},
+			#{parent.id},
+			#{parentIds},
+			#{name},
+			#{firstletter},
+			#{level},
+			#{descr},
+			#{type},
+			#{subType},
+			#{sort},
+			#{user.id},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE sco_ser_tree SET 	
+			parent_id = #{parent.id},
+			parent_ids = #{parentIds},
+			name = #{name},
+			firstletter = #{firstletter},
+			level = #{level},
+			descr = #{descr},
+			type = #{type},
+			sub_type = #{subType},
+			sort = #{sort},
+			user_id = #{user.id}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="updateParentIds">
+		UPDATE sco_ser_tree SET 
+			parent_id = #{parent.id}, 
+			parent_ids = #{parentIds}
+		WHERE id = #{id}
+	</update>
+
+	<!--默认生成了oracle语法-->
+	<update id="delete">
+		UPDATE sco_ser_tree SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id} OR parent_ids LIKE CONCAT('%,', #{id}, ',%')
+	</update>
+	
+</mapper>
